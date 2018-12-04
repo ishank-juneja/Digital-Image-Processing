@@ -1,0 +1,22 @@
+%clear;
+clc;
+close all;
+
+load woman;
+im = X;
+[H1,H2] = size(im);
+[X,Y] = meshgrid(-128:127,-128:127);
+W = 50*sin(X/8 + 2*Y/8); 
+
+Z = im+W;
+imshow(Z/max(Z(:)));
+
+FZ = fftshift(fft2(Z));
+FZ_d = log(abs(fftshift(fft2(Z)))+1); figure; imshow(FZ_d,[min(FZ_d(:)) max(FZ_d(:))]); colormap(gray); colorbar; impixelinfo;
+
+FZ2 = FZ; 
+fw = 3;
+FZ2(119-fw:119+fw,124-fw:124+fw) = 0; FZ2(139-fw:139+fw,134-fw:134+fw) = 0;
+im2 = abs(ifft2(ifftshift(FZ2)));
+figure; imshow(im2/max(im2(:)));
+

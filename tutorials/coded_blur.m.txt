@@ -1,0 +1,91 @@
+load woman; I = X; clear X; % im = original image
+figure(1); imshow(I/255); title ('ORIGINAL image');
+[H,W] = size(I);
+
+r = 6;
+[X,Y] = meshgrid(-r:r,-r:r);
+sig = 3;
+h = exp(-(X.^2 + Y.^2)/(2*sig*sig))/(2*pi*sig*sig); % fourier transform of a Gaussian blur
+hh = zeros(H,W); hh(H/2-r:H/2+r,W/2-r:W/2+r) = h;
+FH = fftshift(fft2(hh));
+
+J1 = fftshift(fft2(I)).*FH; % blurred image
+blurredI = abs(ifftshift(ifft2(J1)));
+figure(2); imshow(blurredI/max(blurredI(:))); title ('BLURRED IMAGE');
+estI1 = abs(ifft2(J1./FH));
+figure(3); imshow(estI1/max(estI1(:))); title ('RESTORED IMAGE');
+
+J2 = fftshift(fft2(I)).*FH + fftshift(fft2(randn(size(FH))*0.01)); % blurred image with a tiny amount of noise
+estI2 = abs(ifft2(J2./FH));
+figure(4); imshow(estI2/max(estI2(:))); title ('RESTORED IMAGE UNDER NOISE');
+
+mask = FH; mask(:,:) = 0; mask(127-40:127+40,127-40:127+40) = 1;
+estI2 = abs(ifft2(mask.*(J2./FH)));
+figure(5); imshow(estI2/max(estI2(:))); title ('RESTORED IMAGE UNDER NOISE + LPF');
+
+
+%%%%% coded aperture blur: a Gaussian blur kernel dot multiplied with a
+%%%%% random binary pattern! The Fourier transform of this blur kernel has
+%%%%% stronger high frequencies than simple Gaussian, and so a simple
+%%%%% inverse filter works well with it!
+r = 6;
+[X,Y] = meshgrid(-r:r,-r:r);
+sig = 2;
+codedmask = rand(2*r+1,2*r+1); codedmask(codedmask < 0.5) = 0; codedmask(codedmask >= 0.5) = 1;
+h2 = codedmask.*exp(-(X.^2 + Y.^2)/(2*sig*sig))/(2*pi*sig*sig); % fourier transform of a Gaussian blur
+hh2 = zeros(H,W); hh2(H/2-r:H/2+r,W/2-r:W/2+r) = h2;
+FH2 = fftshift(fft2(hh2));
+
+J1 = fftshift(fft2(I)).*FH2; % blurred image
+blurredI = abs(ifftshift(ifft2(J1)));
+figure(6); imshow(blurredI/max(blurredI(:))); title ('CODED MASK: BLURRED IMAGE');
+estI1 = abs(ifft2(J1./FH2));
+figure(7); imshow(estI1/max(estI1(:))); title ('CODED MASK: RESTORED IMAGE');
+
+J2 = fftshift(fft2(I)).*FH2 + fftshift(fft2(randn(size(FH))*0.01)); % blurred image with a tiny amount of noise
+estI2 = abs(ifft2(J2./FH2));
+figure(8); imshow(estI2/max(estI2(:))); title ('CODED MASK: RESTORED IMAGE UNDER NOISE');
+
+%%%%%%%
+% let us compare h and h2, rather their fourier transforms FH and FH2
+%
+LFH = log(abs(FH)+1);
+LFH2 = log(abs(FH2)+1);
+maxval = max([max(LFH(:)) max(LFH2(:))]);
+figure(9); surf(LFH); shading interp; title ('Fourier transform of normal Gaussian blur');
+figure(10); surf(LFH2); shading interp; title ('Fourier transform of blur with coded mask');
+
+close all;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+r = 6;
+[X,Y] = meshgrid(-r:r,-r:r);
+sig = 6;
+codedmask = rand(2*r+1,2*r+1); codedmask(codedmask < 0.5) = 0; codedmask(codedmask >= 0.5) = 1;
+h2 = conv2(codedmask,exp(-(X.^2 + Y.^2)/(2*sig*sig))/(2*pi*sig*sig)); % fourier transform of a Gaussian blur
+r = 12;
+hh2 = zeros(H,W); hh2(H/2-r:H/2+r,W/2-r:W/2+r) = h2;
+FH2 = fftshift(fft2(hh2));
+
+J1 = fftshift(fft2(I)).*FH2; % blurred image
+blurredI = abs(ifftshift(ifft2(J1)));
+figure(6); imshow(blurredI/max(blurredI(:))); title ('CODED MASK: BLURRED IMAGE');
+estI1 = abs(ifft2(J1./FH2));
+figure(7); imshow(estI1/max(estI1(:))); title ('CODED MASK: RESTORED IMAGE');
+
+J2 = fftshift(fft2(I)).*FH2 + fftshift(fft2(randn(size(FH))*0.01)); % blurred image with a tiny amount of noise
+estI2 = abs(ifft2(J2./FH2));
+figure(8); imshow(estI2/max(estI2(:))); title ('CODED MASK: RESTORED IMAGE UNDER NOISE');
+
+%%%%%%%
+% let us compare h and h2, rather their fourier transforms FH and FH2
+%
+LFH = log(abs(FH)+1);
+LFH2 = log(abs(FH2)+1);
+maxval = max([max(LFH(:)) max(LFH2(:))]);
+figure(9); surf(LFH); shading interp; title ('Fourier transform of normal Gaussian blur');
+figure(10); surf(LFH2); shading interp; title ('Fourier transform of blur with coded mask');
+
+
+
+

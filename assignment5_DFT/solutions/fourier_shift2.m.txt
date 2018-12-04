@@ -1,0 +1,33 @@
+clear;
+close all;
+A = zeros(300);
+B = A;
+A(50:50+50-1,50:50+50-1) = 255;
+tx = -30; ty = 70;
+B(120:120+50-1,20:20+50-1) = 255;
+
+FA = fftshift(fft2(A));
+lFA = log(abs(FA)+1); imshow(lFA,[min(lFA(:)) max(lFA(:))]); colormap('jet'); colorbar;
+FB = fftshift(fft2(B));
+lFB = log(abs(FB)+1); figure; imshow(lFB,[min(lFB(:)) max(lFB(:))]); colormap('jet'); colorbar;
+
+FC = ((FA)'.*FB)./(abs(FA.*FB)); FC(isnan(FC)==1) = 0;
+lFC = log(abs(FC)+1); figure; imshow(lFC,[min(lFC(:)) max(lFC(:))]); colormap('jet'); colorbar;
+C = ifft2((FC)); 
+figure; imshow(C/max(C(:)));
+impixelinfo;
+
+A = A + randn(size(A))*20;
+B = B + randn(size(A))*20;
+FA = fftshift(fft2(A));
+lFA = log(abs(FA)+1); figure;imshow(lFA,[min(lFA(:)) max(lFA(:))]); colormap('jet'); colorbar;
+FB = fftshift(fft2(B));
+lFB = log(abs(FB)+1); figure; imshow(lFB,[min(lFB(:)) max(lFB(:))]); colormap('jet'); colorbar;
+
+FC = ((FA)'.*FB)./(abs(FA.*FB)); FC(isnan(FC)==1) = 0;
+lFC = log(abs(FC)+1); figure; imshow(lFC,[min(lFC(:)) max(lFC(:))]); colormap('jet'); colorbar;
+C = ifft2((FC)); 
+figure; imshow(C/max(C(:)));
+impixelinfo;
+
+

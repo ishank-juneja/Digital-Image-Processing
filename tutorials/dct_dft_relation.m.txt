@@ -1,0 +1,19 @@
+clear;
+clc;
+
+N = 17;
+f = rand(1,N);
+ff = [f f(end:-1:1)];
+
+fprintf ('\nDCT of f using dct command of MATLAB: ');
+df = dct(f);
+display(df);
+
+fprintf ('\nDCT of f derived from fft: ');
+facs = zeros(1,2*N); facs(2:2*N) = sqrt(2/N); facs(1) = sqrt(1/N);
+df2 = fft(ff).*exp(-1i*pi*(0:2*N-1)/(2*N)).*facs/2;
+% the second term above is exp(-j \pi u / N) from the slides
+% facs refers to the constant factors with which you must multiply the
+% values to get the conventional DCT and then divide by 2
+df2 = df2(1:N); df2 = real(df2); % df2 is in theory real, but due to numerical issues, insignificant complex parts arise.
+display(df2);
